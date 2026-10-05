@@ -1,0 +1,11 @@
+# Dependencies
+node_modules/
+
+# Runtime SQLite database — generated automatically on first run, never committed.
+# (Keeping this out of git means every fresh deploy re-seeds the demo data, which is
+# what you want for a testing environment. See README for how to make it persist instead.)
+data/
+
+# OS / editor cruft
+.DS_Store
+*.log

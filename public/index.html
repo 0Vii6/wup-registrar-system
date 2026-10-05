@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WUP - Online Student Document Request and Tracking System</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          screens: {
+            // Custom single breakpoint for the whole app: below 450px = phone layout (default,
+            // unprefixed classes), 451px and up = desktop layout (use the `dt:` prefix).
+            'dt': '451px'
+          },
+          colors: {
+            brand: {
+              50: '#ecfdf5',
+              100: '#d1fae5',
+              600: '#059669',
+              700: '#047857',
+              800: '#065f46',
+              900: '#064e3b'
+            },
+            gold: {
+              DEFAULT: '#F4CC57',
+              dark: '#E8B93F',
+              text: '#5C4A12'
+            },
+            authv: {
+              DEFAULT: '#351B84',
+              hover: '#2A1569',
+              border: '#6754A3'
+            },
+            olive: {
+              DEFAULT: '#6A6C33',
+              dark: '#55561F'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased min-h-screen">
+
+  <!-- ============================================================ -->
+  <!-- AUTH SHELL — Login & Set New Password (no sidebar)            -->
+  <!-- ============================================================ -->
+  <div id="authShell" class="auth-bg min-h-screen">
+    <div class="max-w-5xl mx-auto px-6 pt-8">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <img src="assets/logo.png" alt="Wesleyan University - Philippines Seal" class="w-14 h-14 object-contain" />
+          <div class="leading-tight">
+            <div class="font-extrabold text-slate-900 text-lg">Wesleyan</div>
+            <div class="font-extrabold text-slate-900 text-lg -mt-1">University-Philippines</div>
+          </div>
+        </div>
+        <button id="authBackBtn" onclick="handleAuthBack()" class="hidden text-xs font-bold text-slate-500 hover:text-slate-800 items-center gap-1.5">
+          <i class="fa-solid fa-arrow-left"></i> Back
+        </button>
+      </div>
+    </div>
+
+    <!-- VIEW: LOGIN -->
+    <section id="viewLogin" class="max-w-md mx-auto my-10 bg-white border border-slate-200/80 rounded-2xl shadow-xl overflow-hidden">
+      <div class="bg-gold px-7 py-6">
+        <h2 class="text-xl font-extrabold text-white leading-snug">Welcome to University Registrar Document Request</h2>
+      </div>
+
+      <div class="p-7 space-y-4">
+        <form id="loginForm" onsubmit="handleUnifiedLogin(event)" class="space-y-4">
+          <div>
+            <label class="block text-[11px] font-bold text-brand-700 uppercase tracking-wider mb-1.5">
+              User ID / Username
+            </label>
+            <div class="relative">
+              <span class="absolute inset-y-0 left-0 pl-4 flex items-center text-authv-border">
+                <i class="fa-solid fa-user"></i>
+              </span>
+              <input type="text" id="inputUsername" required
+                placeholder="WUP-24-1122-112"
+                class="w-full pl-11 pr-4 py-2.5 bg-white border-2 border-authv-border rounded-full text-sm focus:ring-2 focus:ring-authv outline-none transition font-medium" />
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-[11px] font-bold text-brand-700 uppercase tracking-wider mb-1.5">
+              Password
+            </label>
+            <div class="relative">
+              <span class="absolute inset-y-0 left-0 pl-4 flex items-center text-authv-border">
+                <i class="fa-solid fa-lock"></i>
+              </span>
+              <input type="password" id="inputPassword" required
+                placeholder="Enter your password"
+                class="w-full pl-11 pr-10 py-2.5 bg-white border-2 border-authv-border rounded-full text-sm focus:ring-2 focus:ring-authv outline-none transition font-medium" />
+              <button type="button" onclick="togglePasswordVisibility()" class="absolute inset-y-0 right-0 pr-4 flex items-center text-authv-border hover:text-authv">
+                <i id="eyeIcon" class="fa-regular fa-eye"></i>
+              </button>
+            </div>
+            <button type="button" onclick="openForgotPasswordInfo()" class="mt-1.5 text-[11px] font-bold text-brand-700 hover:text-brand-800 uppercase tracking-wide">
+              Forgot Password
+            </button>
+          </div>
+
+          <p id="loginError" class="hidden text-xs font-semibold text-red-700 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+            <i class="fa-solid fa-circle-exclamation mr-1"></i> Incorrect User ID/Username or Password. Please try again.
+          </p>
+
+          <button type="submit" class="w-full py-3 px-4 bg-authv hover:bg-authv-hover text-white font-bold rounded-full shadow-lg transition-all mt-2">
+            LOGIN
+          </button>
+        </form>
+      </div>
+    </section>
+
+    <!-- VIEW: SET NEW PASSWORD (used both for logged-in "change password" and, later, forgot-password reset) -->
+    <section id="viewSetPassword" class="hidden max-w-md mx-auto my-10 bg-white border border-slate-200/80 rounded-2xl shadow-xl overflow-hidden">
+      <div class="bg-gold px-7 pt-5 pb-6">
+        <p class="text-[11px] font-bold text-white/80 uppercase tracking-wider mb-1" id="setPwEyebrow">Account Security &middot; Password</p>
+        <h2 class="text-xl font-extrabold text-white leading-snug">Set a new password</h2>
+        <p class="text-xs text-white/85 mt-1 leading-relaxed">Choose something you haven't used before. It'll be required next time you sign in.</p>
+      </div>
+
+      <div class="p-7 space-y-4">
+        <form id="setPasswordForm" onsubmit="handleSetPasswordSubmit(event)" class="space-y-4">
+          <div>
+            <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Current Password</label>
+            <div class="relative">
+              <span class="absolute inset-y-0 left-0 pl-4 flex items-center text-authv-border">
+                <i class="fa-solid fa-lock"></i>
+              </span>
+              <input type="password" id="pwCurrent" required placeholder="Enter current password"
+                class="w-full pl-11 pr-4 py-2.5 bg-white border-2 border-authv-border rounded-full text-sm focus:ring-2 focus:ring-authv outline-none transition font-medium" />
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">New Password</label>
+            <div class="relative">
+              <span class="absolute inset-y-0 left-0 pl-4 flex items-center text-authv-border">
+                <i class="fa-solid fa-lock"></i>
+              </span>
+              <input type="password" id="pwNew" required placeholder="Enter new password" oninput="updatePwMeter()"
+                class="w-full pl-11 pr-4 py-2.5 bg-white border-2 border-authv-border rounded-full text-sm focus:ring-2 focus:ring-authv outline-none transition font-medium" />
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Confirm New Password</label>
+            <div class="relative">
+              <span class="absolute inset-y-0 left-0 pl-4 flex items-center text-authv-border">
+                <i class="fa-solid fa-lock"></i>
+              </span>
+              <input type="password" id="pwConfirm" required placeholder="Enter confirm new password"
+                class="w-full pl-11 pr-4 py-2.5 bg-white border-2 border-authv-border rounded-full text-sm focus:ring-2 focus:ring-authv outline-none transition font-medium" />
+            </div>
+          </div>
+
+          <div class="flex gap-1.5" id="pwMeterBar">
+            <div class="pw-meter-segment"></div>
+            <div class="pw-meter-segment"></div>
+            <div class="pw-meter-segment"></div>
+            <div class="pw-meter-segment"></div>
+          </div>
+          <p class="text-[11px] text-slate-400">Use 8+ characters, with a mix of letters, numbers and symbols.</p>
+
+          <p id="setPwError" class="hidden text-xs font-semibold text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2"></p>
+
+          <button type="submit" class="w-full py-3 px-4 bg-authv hover:bg-authv-hover text-white font-bold rounded-full shadow-lg transition-all mt-2">
+            Update Password
+          </button>
+        </form>
+      </div>
+    </section>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- APP SHELL — Sidebar layout for Student & Staff                -->
+  <!-- ============================================================ -->
+  <div id="appShell" class="hidden h-screen flex overflow-hidden relative">
+
+    <!-- Mobile-only backdrop behind the sidebar drawer -->
+    <div id="sidebarBackdrop" onclick="closeMobileSidebar()" class="hidden fixed inset-0 bg-slate-900/50 z-30 dt:hidden"></div>
+
+    <!-- SIDEBAR — static column on desktop (dt: 451px+), off-canvas drawer on phone.
+         Toggled open on phone via the .mobile-open class (see styles.css / app.js). -->
+    <aside id="sidebarAside" class="fixed inset-y-0 left-0 z-40 w-[230px] -translate-x-full transition-transform duration-300 ease-in-out dt:static dt:translate-x-0 dt:transition-none dt:w-[180px] shrink-0 bg-gold h-screen flex flex-col items-center py-5 px-4 overflow-hidden">
+      <button onclick="closeMobileSidebar()" class="self-end -mt-1 mb-1 text-slate-900/70 hover:text-slate-900 text-xl leading-none dt:hidden">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+      <img src="assets/logo.png" alt="WUP Seal" class="w-16 h-16 object-contain mb-5 shrink-0" />
+
+      <nav id="sidebarNav" class="w-full flex-1 flex flex-col gap-1.5 min-h-0"></nav>
+
+      <div class="w-full flex flex-col gap-2 mt-3 shrink-0">
+        <button onclick="handleLogout()" class="side-nav-item !text-slate-900">
+          <i class="fa-solid fa-arrow-right-from-bracket w-4"></i> Logout
+        </button>
+        <button id="roleBottomPill" onclick="handleRolePillClick()" class="w-full flex items-center gap-2 bg-white rounded-full px-4 py-2.5 font-bold text-sm text-slate-900 shadow-sm hover:shadow transition">
+          <i class="fa-solid fa-user-gear"></i>
+          <span id="roleBottomPillLabel">Student</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="flex-1 h-screen overflow-y-auto p-4 dt:p-6 space-y-4">
+
+      <!-- VIEW: STUDENT -->
+      <section id="viewStudent" class="hidden space-y-3 dt:space-y-4">
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 flex items-center justify-between gap-3">
+          <div class="min-w-0">
+            <div class="text-xs text-slate-400 font-mono" id="dispStudentId"></div>
+            <h2 class="text-xl dt:text-2xl font-extrabold text-slate-900 truncate" id="dispStudentName"></h2>
+            <p class="text-xs text-slate-500 mt-0.5" id="dispStudentCourse"></p>
+          </div>
+          <button onclick="openNewRequestModal()" class="hidden dt:flex shrink-0 px-5 py-2.5 bg-gold hover:bg-gold-dark text-slate-900 font-bold rounded-full shadow-md transition-all items-center gap-2">
+            <span>Create New Request</span>
+            <i class="fa-solid fa-file-circle-plus"></i>
+          </button>
+          <button onclick="openMobileSidebar()" class="dt:hidden shrink-0 w-10 h-10 flex items-center justify-center rounded-full bg-slate-100 hover:bg-slate-200 text-slate-800 text-lg transition">
+            <i class="fa-solid fa-bars"></i>
+          </button>
+        </div>
+
+        <!-- Full-width Create button, phone layout only -->
+        <button onclick="openNewRequestModal()" class="dt:hidden w-full px-5 py-3 bg-gold hover:bg-gold-dark text-slate-900 font-bold rounded-full shadow-md transition-all flex items-center justify-center gap-2">
+          <span>Create New Request</span>
+          <i class="fa-solid fa-file-circle-plus"></i>
+        </button>
+
+        <div id="studentRequestsContainer" class="space-y-3"></div>
+      </section>
+
+      <!-- VIEW: STAFF -->
+      <section id="viewStaff" class="hidden space-y-3 dt:space-y-4">
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 flex items-center justify-between gap-3">
+          <div class="min-w-0">
+            <h2 class="text-lg dt:text-xl font-extrabold text-slate-900">Document Request Queue &amp; Verification</h2>
+            <p class="text-xs text-slate-500 mt-0.5">Manage student application, verify Cashier OR Number, and dispatch for claiming.</p>
+          </div>
+          <button onclick="openMobileSidebar()" class="dt:hidden shrink-0 w-10 h-10 flex items-center justify-center rounded-full bg-slate-100 hover:bg-slate-200 text-slate-800 text-lg transition">
+            <i class="fa-solid fa-bars"></i>
+          </button>
+        </div>
+
+        <!-- Stat pills + search, one row on desktop -->
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-4 flex flex-col dt:flex-row items-stretch dt:items-center gap-3">
+          <div class="grid grid-cols-2 dt:grid-cols-4 gap-3 flex-1">
+            <div class="border border-slate-200 rounded-xl px-4 py-2.5 text-center">
+              <div class="text-[10px] font-bold text-slate-500 uppercase tracking-wide">Pending Review</div>
+              <div class="text-xl font-black text-red-600" id="metricPending">0</div>
+            </div>
+            <div class="border border-slate-200 rounded-xl px-4 py-2.5 text-center">
+              <div class="text-[10px] font-bold text-slate-500 uppercase tracking-wide">In-Processing</div>
+              <div class="text-xl font-black text-red-600" id="metricProcessing">0</div>
+            </div>
+            <div class="border border-slate-200 rounded-xl px-4 py-2.5 text-center">
+              <div class="text-[10px] font-bold text-slate-500 uppercase tracking-wide">Ready for Claim</div>
+              <div class="text-xl font-black text-red-600" id="metricReady">0</div>
+            </div>
+            <div class="border border-slate-200 rounded-xl px-4 py-2.5 text-center">
+              <div class="text-[10px] font-bold text-slate-500 uppercase tracking-wide">Rejected/Denied</div>
+              <div class="text-xl font-black text-red-600" id="metricRejected">0</div>
+            </div>
+          </div>
+          <div class="relative w-full dt:w-96">
+            <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400">
+              <i class="fa-solid fa-magnifying-glass text-xs"></i>
+            </span>
+            <input type="text" id="staffSearchInput" oninput="filterStaffQueue()"
+              placeholder="Search Student ID (WUP-24...), Name, or Tracking OR #"
+              class="w-full pl-9 pr-4 py-2.5 border border-slate-200 rounded-full text-xs focus:ring-2 focus:ring-gold outline-none" />
+          </div>
+        </div>
+
+        <!-- Queue Table -->
+        <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm">
+              <thead class="bg-slate-50 text-slate-500 text-[11px] font-bold uppercase tracking-wider border-b border-slate-200">
+                <tr>
+                  <th class="px-4 py-3.5">Ref # &amp; Date</th>
+                  <th class="px-4 py-3.5">Student Information</th>
+                  <th class="px-4 py-3.5">Documents Requested</th>
+                  <th class="px-4 py-3.5">Requirements</th>
+                  <th class="px-4 py-3.5">Cashier OR #</th>
+                  <th class="px-4 py-3.5">Status</th>
+                  <th class="px-4 py-3.5 text-right">Action</th>
+                </tr>
+              </thead>
+              <tbody id="staffTableBody" class="divide-y divide-slate-100"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- ==================== MODALS ==================== -->
+
+  <!-- MODAL: FORGOT PASSWORD (coming soon) -->
+  <div id="modalForgotInfo" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-sm w-full shadow-2xl overflow-hidden">
+      <div class="bg-gold px-6 py-4 flex items-center justify-between">
+        <h3 class="font-extrabold text-white text-base">Forgot Password</h3>
+        <button onclick="closeForgotPasswordInfo()" class="text-white/80 hover:text-white text-xl leading-none">&times;</button>
+      </div>
+      <div class="p-6 space-y-3 text-center">
+        <div class="w-12 h-12 rounded-full bg-amber-50 text-gold-text flex items-center justify-center mx-auto text-xl">
+          <i class="fa-solid fa-comment-sms"></i>
+        </div>
+        <p class="text-sm text-slate-700 font-semibold">SMS-based password recovery is coming soon.</p>
+        <p class="text-xs text-slate-500 leading-relaxed">In the meantime, please visit or contact the Office of Records to have your password reset.</p>
+        <button onclick="closeForgotPasswordInfo()" class="w-full py-2.5 bg-authv hover:bg-authv-hover text-white font-bold rounded-full mt-2">Got it</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: PASSWORD UPDATED CONFIRMATION -->
+  <div id="modalPwUpdated" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-sm w-full shadow-2xl overflow-hidden text-center">
+      <div class="bg-gold px-6 py-4">
+        <h3 class="font-extrabold text-white text-base">Password Updated</h3>
+      </div>
+      <div class="p-6 space-y-3">
+        <div class="w-12 h-12 rounded-full bg-emerald-50 text-emerald-700 flex items-center justify-center mx-auto text-xl">
+          <i class="fa-solid fa-circle-check"></i>
+        </div>
+        <p class="text-sm text-slate-700">Your password has been changed. Use it next time you sign in.</p>
+        <button onclick="closePwUpdatedModal()" class="w-full py-2.5 bg-authv hover:bg-authv-hover text-white font-bold rounded-full mt-2">Back to Dashboard</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: NEW REQUEST (Document Selection + OR Number + Assessment Form Upload) -->
+  <div id="modalNewRequest" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden my-8">
+      <div class="px-6 py-4 bg-gold flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <i class="fa-solid fa-file-circle-plus text-white text-lg"></i>
+          <h3 class="font-extrabold text-lg text-white">New Document Request</h3>
+        </div>
+        <button onclick="closeNewRequestModal()" class="text-white/80 hover:text-white text-xl">&times;</button>
+      </div>
+
+      <div class="p-6 overflow-y-auto space-y-5 flex-1">
+        <!-- 1. Select Documents -->
+        <div>
+          <label class="block text-xs font-bold uppercase text-slate-600 tracking-wider mb-2">
+            1. Select Documents (Multiple Selection Allowed)
+          </label>
+          <div class="grid grid-cols-1 dt:grid-cols-2 gap-2.5" id="docSelectionList"></div>
+        </div>
+
+        <!-- 2. Official Receipt (OR) Input -->
+        <div>
+          <label class="block text-xs font-bold uppercase text-slate-600 tracking-wider mb-1.5">
+            2. Cashier Official Receipt (OR) Number *
+          </label>
+          <input type="text" id="reqOrNumber" required placeholder="e.g. OR-2026-98124"
+            class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-sm font-mono font-bold focus:ring-2 focus:ring-gold outline-none uppercase" />
+          <p class="text-[11px] text-slate-500 mt-1">Enter the official receipt number issued by the Cashier upon payment.</p>
+        </div>
+
+        <!-- 3. Assessment Form Upload -->
+        <div>
+          <label class="block text-xs font-bold uppercase text-slate-600 tracking-wider mb-1.5">
+            3. Upload Assessment Form *
+          </label>
+          <div class="border-2 border-dashed border-slate-300 hover:border-gold rounded-xl p-4 text-center hover:bg-slate-50 transition cursor-pointer" onclick="document.getElementById('fileAssessment').click()">
+            <div id="assessmentPhotoPreviewContainer" class="hidden mb-2">
+              <img id="assessmentPhotoPreview" src="" alt="Assessment Preview" class="max-h-36 mx-auto rounded-lg shadow-sm border border-slate-200 object-contain" />
+            </div>
+            <i id="assessmentUploadIcon" class="fa-solid fa-file-invoice text-authv text-2xl mb-1"></i>
+            <p class="text-xs text-slate-700 font-semibold" id="fileAssessmentLabel">Click to upload Assessment Form (JPG, PNG, PDF)</p>
+            <p class="text-[10px] text-slate-400 mt-0.5">Used by the registrar to verify enrollment status and department clearance</p>
+            <input type="file" id="fileAssessment" accept="image/*,.pdf" class="hidden" onchange="handleAssessmentFileSelected(this)" />
+          </div>
+        </div>
+
+        <!-- 4. Clearance Requirement Upload — only shown when a qualifying document is selected -->
+        <div id="clearanceUploadSection" class="hidden">
+          <label class="block text-xs font-bold uppercase text-slate-600 tracking-wider mb-1.5">
+            4. Upload Clearance Requirement *
+          </label>
+          <div class="border-2 border-dashed border-slate-300 hover:border-gold rounded-xl p-4 text-center hover:bg-slate-50 transition cursor-pointer" onclick="document.getElementById('fileClearance').click()">
+            <div id="clearancePhotoPreviewContainer" class="hidden mb-2">
+              <img id="clearancePhotoPreview" src="" alt="Clearance Preview" class="max-h-36 mx-auto rounded-lg shadow-sm border border-slate-200 object-contain" />
+            </div>
+            <i id="clearanceUploadIcon" class="fa-solid fa-file-shield text-authv text-2xl mb-1"></i>
+            <p class="text-xs text-slate-700 font-semibold" id="fileClearanceLabel">Click to upload Clearance Requirement (JPG, PNG, PDF)</p>
+            <p class="text-[10px] text-slate-400 mt-0.5">Required for Transcript of Records, Certificate of Transfer, Good Moral Certificate, and Certificate of Completion</p>
+            <input type="file" id="fileClearance" accept="image/*,.pdf" class="hidden" onchange="handleClearanceFileSelected(this)" />
+          </div>
+        </div>
+
+        <div class="p-4 bg-amber-50 border border-amber-200 rounded-xl">
+          <div class="flex items-center gap-2 text-amber-900 font-bold text-xs mb-1">
+            <i class="fa-solid fa-circle-info text-amber-700"></i>
+            <span>Instant Dispatch to Registrar</span>
+          </div>
+          <p class="text-[11px] text-amber-800 leading-relaxed">
+            Upon submitting, a tracking Reference will be generated and your request will be immediately dispatched to the Registrar queue for OR and Assessment Form verification.
+          </p>
+        </div>
+      </div>
+
+      <div class="px-6 py-4 bg-slate-50 border-t border-slate-200 flex justify-end gap-3">
+        <button onclick="closeNewRequestModal()" class="px-4 py-2 text-sm font-bold text-slate-600 hover:text-slate-800">Cancel</button>
+        <button onclick="submitNewRequest()" class="px-5 py-2 text-sm font-bold bg-olive hover:bg-olive-dark text-white rounded-full shadow transition">Submit Request</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: REQUEST SUBMITTED -->
+  <div id="modalRequestSubmitted" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full shadow-2xl overflow-hidden">
+      <div class="px-6 py-4 bg-gold flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <i class="fa-solid fa-shield-halved text-white text-lg"></i>
+          <h3 class="font-extrabold text-lg text-white">Request Submitted</h3>
+        </div>
+        <button onclick="closeRequestSubmittedModal()" class="text-white/80 hover:text-white text-xl">&times;</button>
+      </div>
+      <div class="p-8 text-center">
+        <p class="text-sm text-slate-700 leading-relaxed">
+          Your request and Assessment Form have been routed directly to the Registrar for review.
+        </p>
+        <p class="text-xs font-mono text-slate-400 mt-3" id="submittedRefDisplay"></p>
+      </div>
+      <div class="px-6 py-4 bg-slate-50 border-t border-slate-200 flex justify-end">
+        <button onclick="closeRequestSubmittedModal()" class="px-5 py-2 text-sm font-bold bg-olive hover:bg-olive-dark text-white rounded-full shadow transition">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: REGISTRAR REVIEW & ACTION DRAWER -->
+  <div id="modalStaffReview" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
+      <div class="px-6 py-4 bg-gold text-white flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <i class="fa-solid fa-clipboard-check text-black"></i>
+          <h3 class="font-bold text-base" id="revModalHeader">Review Application</h3>
+        </div>
+        <button onclick="closeStaffReviewModal()" class="text-white/70 hover:text-white text-xl">&times;</button>
+      </div>
+
+      <div class="p-6 overflow-y-auto space-y-4 flex-1 text-sm">
+        <div class="grid grid-cols-2 gap-4 bg-slate-50 p-4 rounded-xl border border-slate-200">
+          <div>
+            <span class="text-xs text-slate-400 block uppercase font-bold">Student Name</span>
+            <span class="font-bold text-slate-800 text-base" id="revStudentName"></span>
+            <span class="text-xs text-slate-500 font-mono block" id="revStudentId"></span>
+          </div>
+          <div>
+            <span class="text-xs text-slate-400 block uppercase font-bold">Tracking Reference</span>
+            <span class="font-mono font-bold text-authv text-base" id="revTrackingRef"></span>
+            <span class="text-xs text-slate-500 block" id="revDate"></span>
+          </div>
+        </div>
+
+        <div class="p-4 border rounded-xl" id="revOrContainer">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-bold uppercase tracking-wider text-slate-600">Official Receipt Verification</span>
+            <span id="revOrBadge" class="text-[11px] px-2 py-0.5 rounded font-bold"></span>
+          </div>
+          <div class="text-xs">
+            <span class="text-slate-500">Encoded OR Number:</span>
+            <div class="font-mono text-sm font-bold text-slate-800 mt-0.5" id="revOrNumber">None</div>
+          </div>
+        </div>
+
+        <!-- Registrar Assessment Form Preview Box -->
+        <div class="p-4 border border-slate-200 rounded-xl bg-slate-50">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-bold uppercase tracking-wider text-slate-600">Attached Assessment Form</span>
+            <span class="text-[11px] px-2 py-0.5 rounded font-bold bg-blue-100 text-blue-800">Verification Required</span>
+          </div>
+          <div id="revAssessmentContainer" class="mt-1"></div>
+        </div>
+
+        <!-- Registrar Clearance Requirement Preview Box — only shown when the request has one -->
+        <div id="revClearanceBox" class="hidden p-4 border border-slate-200 rounded-xl bg-slate-50">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-bold uppercase tracking-wider text-slate-600">Clearance Requirement</span>
+            <span class="text-[11px] px-2 py-0.5 rounded font-bold bg-blue-100 text-blue-800">Verification Required</span>
+          </div>
+          <div id="revClearanceContainer" class="mt-1"></div>
+        </div>
+
+        <div>
+          <span class="text-xs font-bold uppercase tracking-wider text-slate-600 block mb-2">Requested Credentials</span>
+          <div id="revDocsList" class="space-y-1.5"></div>
+        </div>
+
+        <div id="revRejectReasonBox" class="p-3 bg-red-50 border border-red-200 rounded-xl text-xs text-red-800 hidden">
+          <div class="font-bold mb-0.5"><i class="fa-solid fa-circle-exclamation mr-1"></i> Rejection Reason Recorded:</div>
+          <p id="revRejectReasonText"></p>
+        </div>
+      </div>
+
+      <div class="px-6 py-4 bg-slate-50 border-t border-slate-200 flex items-center justify-between gap-2">
+        <button id="revRejectBtn" onclick="promptRejectModal()" class="px-4 py-2 text-xs font-bold text-red-700 hover:bg-red-50 border border-red-300 rounded-full transition">
+          <i class="fa-solid fa-ban mr-1"></i> Reject Request
+        </button>
+
+        <div class="flex items-center gap-2" id="revActionButtons"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: REJECTION REASON PROMPT -->
+  <div id="modalRejectReason" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
+      <div class="flex items-center gap-2 text-red-600">
+        <i class="fa-solid fa-triangle-exclamation text-xl"></i>
+        <h3 class="font-bold text-base text-slate-800">Specify Rejection Reason</h3>
+      </div>
+      <p class="text-xs text-slate-600">
+        This remark will immediately be displayed on the student's dashboard so they know how to correct their submission.
+      </p>
+
+      <div class="space-y-2">
+        <select id="rejectPreset" onchange="applyRejectPreset(this.value)" class="w-full text-xs p-2 border border-slate-300 rounded-lg bg-slate-50">
+          <option value="">-- Choose Standard Reason --</option>
+          <option value="Official Receipt (OR) number not found or invalid in Cashier records.">Official Receipt (OR) not found in cashier records</option>
+          <option value="Assessment Form / Certificate of Matriculation is unreadable or missing.">Assessment Form is unreadable or invalid</option>
+          <option value="Missing or incomplete academic/library clearance.">Missing library/academic clearance</option>
+          <option value="Grades for the requested semester are not yet officially finalized.">Grades not yet officially finalized</option>
+          <option value="Student record has an existing accounting balance hold.">Accounting balance hold</option>
+        </select>
+        <textarea id="rejectCustomText" rows="3" placeholder="Or enter specific registrar instructions..."
+          class="w-full p-2.5 text-xs border border-slate-300 rounded-xl focus:ring-2 focus:ring-red-500 outline-none"></textarea>
+      </div>
+
+      <div class="flex justify-end gap-2 pt-2">
+        <button onclick="closeRejectPrompt()" class="px-4 py-2 text-xs font-bold text-slate-600">Cancel</button>
+        <button onclick="confirmReject()" class="px-5 py-2 text-xs font-bold bg-red-600 hover:bg-red-700 text-white rounded-full shadow">Confirm Rejection</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- JAVASCRIPT LOGIC ENGINE -->
+  <script src="app.js"></script>
+</body>
+</html>

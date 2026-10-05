@@ -1,0 +1,15 @@
+{
+  "name": "wup-registrar-system",
+  "version": "1.0.0",
+  "description": "WUP Online Student Document Request and Tracking System — Express + SQLite backend",
+  "main": "server.js",
+  "engines": {
+    "node": ">=22.5.0"
+  },
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}

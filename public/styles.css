@@ -1,0 +1,67 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+body { font-family: 'Plus Jakarta Sans', sans-serif; }
+
+.badge-pulse { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .6; } }
+
+/* Auth screens (login / set new password) background wash */
+.auth-bg {
+  background:
+    radial-gradient(circle at 70% 30%, rgba(244,204,87,0.18), transparent 45%),
+    #fdfdf7;
+}
+
+/* Sidebar nav item */
+.side-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.55rem 0.9rem;
+  border-radius: 9999px;
+  font-weight: 700;
+  font-size: 0.8rem;
+  color: #1f2937;
+  transition: background-color .15s ease, color .15s ease;
+  width: 100%;
+  text-align: left;
+  flex-shrink: 0;
+}
+.side-nav-item:hover { background-color: rgba(0,0,0,0.06); }
+.side-nav-item.active {
+  background-color: #6A6C33;
+  color: #fdfdf0;
+}
+.side-nav-item.active i { color: #fdfdf0; }
+
+/* Progress tracker */
+.progress-step {
+  flex: 1;
+  text-align: center;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 6px 4px;
+  border-radius: 9999px;
+  background-color: #e5e7eb;
+  color: #9ca3af;
+}
+.progress-step.done {
+  background-color: #6A6C33;
+  color: #fdfdf0;
+}
+
+/* Mobile sidebar drawer — forced open regardless of the base -translate-x-full class.
+   Only matters below the 451px 'dt' breakpoint; at dt: and up the sidebar is static anyway. */
+#sidebarAside.mobile-open {
+  transform: translateX(0) !important;
+}
+
+/* Password strength meter bar */
+.pw-meter-segment {
+  height: 4px;
+  border-radius: 9999px;
+  flex: 1;
+  background-color: #e5e7eb;
+}
+.pw-meter-segment.filled-weak { background-color: #ef4444; }
+.pw-meter-segment.filled-mid { background-color: #f59e0b; }
+.pw-meter-segment.filled-strong { background-color: #16a34a; }
