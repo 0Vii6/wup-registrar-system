@@ -344,7 +344,7 @@
         const items = [
           { key: 'all', label: 'All', icon: 'fa-solid fa-box-archive' },
           { key: 'pending', label: 'Pending', icon: 'fa-solid fa-hourglass-half' },
-          { key: 'processing', label: 'In-Processing', icon: 'fa-solid fa-print' },
+          { key: 'processing', label: 'Processing', icon: 'fa-solid fa-print' },
           { key: 'ready', label: 'Ready to Claim', icon: 'fa-solid fa-square-check' },
           { key: 'claimed', label: 'Claimed', icon: 'fa-solid fa-box' }
         ];
@@ -357,7 +357,7 @@
         const items = [
           { key: 'all', label: 'All', icon: 'fa-solid fa-box-archive' },
           { key: 'pending', label: 'Pending', icon: 'fa-solid fa-hourglass-half' },
-          { key: 'processing', label: 'In-Processing', icon: 'fa-solid fa-print' },
+          { key: 'processing', label: 'Processing', icon: 'fa-solid fa-print' },
           { key: 'ready', label: 'Ready to Claim', icon: 'fa-solid fa-square-check' },
           { key: 'claimed', label: 'Claimed', icon: 'fa-solid fa-box' },
           { key: 'rejected', label: 'Rejected', icon: 'fa-solid fa-file-circle-xmark' }
@@ -597,7 +597,7 @@
             <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wide mb-2">Progress Tracker</div>
             <div class="flex gap-2">
               <div class="progress-step ${stepDone.filed ? 'done' : ''}">Request Filed</div>
-              <div class="progress-step ${stepDone.processing ? 'done' : ''}">In-Processing</div>
+              <div class="progress-step ${stepDone.processing ? 'done' : ''}">Processing</div>
               <div class="progress-step ${stepDone.ready ? 'done' : ''}">Ready to Claim</div>
             </div>
           </div>
@@ -889,7 +889,7 @@
         case 'pending_verification':
           return '<span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-blue-100 text-blue-800 border border-blue-200 badge-pulse"><i class="fa-solid fa-magnifying-glass mr-1"></i>Pending Review</span>';
         case 'processing':
-          return '<span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-purple-100 text-purple-800 border border-purple-200"><i class="fa-solid fa-print mr-1"></i>In-Processing</span>';
+          return '<span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-purple-100 text-purple-800 border border-purple-200"><i class="fa-solid fa-print mr-1"></i>Processing</span>';
         case 'ready':
           return '<span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200 badge-pulse"><i class="fa-solid fa-circle-check mr-1"></i>Ready to Claim</span>';
         case 'completed':
